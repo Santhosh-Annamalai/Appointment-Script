@@ -66,6 +66,7 @@ async function loopQuery() {
       const finalResponse = new Promise((resolve, reject) => {
         setTimeout(() => {
           loopQuery().then(res => resolve(res)).catch(err => {
+            playAlert();
             console.log(inspect(err));
             reject(err);
           });
