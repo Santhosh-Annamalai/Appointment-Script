@@ -57,7 +57,7 @@ async function loopQuery() {
     if (responseBoolean[0] === true) {
       console.log(inspect(responseBoolean[1]));
       playAlert();
-      return "Slots are available. Kindly Proceed for Booking Appointment."
+      return "Slots are available. Kindly Proceed for Booking Appointment.";
     }
     else {
       trialCounter = trialCounter + 1;
