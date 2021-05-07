@@ -1,0 +1,15 @@
+{
+  "name": "vaccination-slot-checking-script",
+  "version": "1.0.0",
+  "description": "A script to automate appointment checking",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Santhosh Annamalai",
+  "license": "MIT",
+  "dependencies": {
+    "play-sound": "^1.1.3",
+    "superagent": "^6.1.0"
+  }
+}
