@@ -61,7 +61,7 @@ async function loopQuery() {
     }
     else {
       trialCounter = trialCounter + 1;
-      //(trialCounter === 1) ? playAlert() : false;
+      // (trialCounter === 1) ? playAlert() : false;
       console.log(trialCounter);
       const finalResponse = new Promise((resolve, reject) => {
         setTimeout(() => {
