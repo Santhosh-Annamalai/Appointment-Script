@@ -9,7 +9,7 @@ const { inspect } = require("util");
 function playAlert() {
   player.play('./Audio.mp3', (err) => {
     if (err) {
-      console.log(`Could not play sound: ${err}`);
+      console.log(`Could not play sound: ${inspect(err)}`);
     }
   });
 }
@@ -66,8 +66,8 @@ async function loopQuery() {
       const finalResponse = new Promise((resolve, reject) => {
         setTimeout(() => {
           loopQuery().then(res => resolve(res)).catch(err => {
-            playAlert();
             console.log(inspect(err));
+            playAlert();
             reject(err);
           });
         }, 4000);
@@ -76,8 +76,8 @@ async function loopQuery() {
     }
   }
   catch (error) {
-    playAlert();
     console.log(inspect(error));
+    playAlert();
     return error;
   }
 }
