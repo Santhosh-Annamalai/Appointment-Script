@@ -1,0 +1,7 @@
+{
+  "dosageProperty": "dose2 or dose1",
+  "vaccineName": "COVAXIN or COVISHIELD",
+  "fee": "Paid or Free",
+  "age": "Number - 18 or 45 lower age limit",
+  "districtID": "Number - Chennai ID is 571"
+}
