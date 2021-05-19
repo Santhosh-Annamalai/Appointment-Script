@@ -60,7 +60,7 @@ async function loopQuery() {
   try {
     const responseBoolean = await getAppointmentDetails(date);
     if (responseBoolean[0] === true) {
-      console.log(inspect(responseBoolean[1], depth = 4));
+      console.log(inspect(responseBoolean[1], { depth: 4 }));
       playAlert();
       return "Slots are available. Kindly Proceed for Booking Appointment.";
     }
