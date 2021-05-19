@@ -20,7 +20,7 @@ async function getAppointmentDetails(date) {
     const response = await superagent.get(`https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id=${districtID}&date=${date}`);
     const responseObject = response.body.centers;
     const filteredResponse = responseObject.filter((arrayElement) => {
-      if (arrayElement.fee_type === fee) {
+      if ((arrayElement.fee_type === fee) || (fee === "Both")) {
         const possibleSessions = arrayElement.sessions.filter(({ min_age_limit, vaccine, available_capacity_dose1, available_capacity_dose2 }) => ((min_age_limit === age) && (vaccine === vaccineName) && ((dosageProperty === "dose2") ? (available_capacity_dose2 > 0) : (available_capacity_dose1 > 0))));
         if (possibleSessions.length > 0) {
           return true;
