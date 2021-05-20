@@ -6,7 +6,7 @@ const superagent = require("superagent");
 const player = require("play-sound")();
 const { inspect } = require("util");
 const { dosageProperty, vaccineName, fee, age, districtID } = require("./config.json");
-console.log("Version 1.2", dosageProperty, vaccineName, fee, age, districtID);
+console.log("Version 1.3", dosageProperty, vaccineName, fee, age, districtID);
 
 function playAlert() {
   player.play("./Audio.mp3", (err) => {
@@ -57,7 +57,7 @@ async function getAppointmentDetails(date) {
           playAlert();
           reject(err);
         });
-      }, 0); // https://stackoverflow.com/a/20999077/10901309
+      }, 4000); // https://stackoverflow.com/a/20999077/10901309
     });
     return finalRes;
   }
