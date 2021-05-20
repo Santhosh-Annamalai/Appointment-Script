@@ -6,7 +6,7 @@ const superagent = require("superagent");
 const player = require("play-sound")();
 const { inspect } = require("util");
 const { dosageProperty, vaccineName, fee, age, districtID } = require("./config.json");
-console.log("Version 1.1", dosageProperty, vaccineName, fee, age, districtID);
+console.log("Version 1.2", dosageProperty, vaccineName, fee, age, districtID);
 
 function playAlert() {
   player.play("./Audio.mp3", (err) => {
