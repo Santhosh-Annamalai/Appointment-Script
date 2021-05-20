@@ -6,6 +6,7 @@ const superagent = require("superagent");
 const player = require("play-sound")();
 const { inspect } = require("util");
 const { dosageProperty, vaccineName, fee, age, districtID } = require("./config.json");
+console.log("Version 1.1", dosageProperty, vaccineName, fee, age, districtID);
 
 function playAlert() {
   player.play("./Audio.mp3", (err) => {
@@ -17,27 +18,33 @@ function playAlert() {
 
 async function getAppointmentDetails(date) {
   try {
+    const availableCenters = [];
     const response = await superagent.get(`https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id=${districtID}&date=${date}`);
-    const responseObject = response.body.centers;
-    const filteredResponse = responseObject.filter((arrayElement) => {
-      if ((arrayElement.fee_type === fee) || (fee === "Both")) {
+    
+    response.body.centers.forEach((arrayElement) => {
+      if ((fee === "Both") || (arrayElement.fee_type === fee)) {
         const possibleSessions = arrayElement.sessions.filter(({ min_age_limit, vaccine, available_capacity_dose1, available_capacity_dose2 }) => ((min_age_limit === age) && (vaccine === vaccineName) && ((dosageProperty === "dose2") ? (available_capacity_dose2 > 0) : (available_capacity_dose1 > 0))));
+        
         if (possibleSessions.length > 0) {
-          return true;
+          const availableCenter = arrayElement;
+          availableCenter.availableSessions = possibleSessions;
+          availableCenters.push(availableCenter);
         }
-        else {
-          return false;
-        }
-      }
-      else {
-        return false;
       }
     });
-    if (filteredResponse.length > 0) {
-      return [true, filteredResponse];
+    
+    if (availableCenters.length > 0) {
+      const responseObject = {
+        availability: true,
+        availableCenters: filteredResponse
+      };
+      return responseObject;
     }
     else {
-      return [false];
+      const responseObject = {
+        availability: false
+      };
+      return responseObject;
     }
   }
   catch (error) {
@@ -58,11 +65,12 @@ async function getAppointmentDetails(date) {
 
 async function loopQuery() {
   try {
-    const responseBoolean = await getAppointmentDetails(date);
-    if (responseBoolean[0] === true) {
-      console.log(inspect(responseBoolean[1], { depth: 4 }));
+    const response = await getAppointmentDetails(date);
+    if (response.availability === true) {
+      response.findingTime = new Date().toLocaleString("en-GB", { timeZone: "Asia/Kolkata" });
+      console.log("Slots are available. Kindly Proceed for Booking Appointment.\n\n", inspect(response.availableCenters, { depth: 4 }));
       playAlert();
-      return "Slots are available. Kindly Proceed for Booking Appointment.";
+      return "";
     }
     else {
       trialCounter = trialCounter + 1;
