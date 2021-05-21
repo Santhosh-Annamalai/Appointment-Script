@@ -3,33 +3,58 @@ const date = dateObject.toLocaleString("en-GB", { timeZone: "Asia/Kolkata" }).sp
 console.log(date, dateObject.toLocaleString());
 let trialCounter = 0;
 let errorCounter = 0;
-let playerActive = false;
 const playerQueue = new Map();
 const superagent = require("superagent");
 const player = require("play-sound")();
 const { inspect } = require("util");
 const { dosageProperty, vaccineName, fee, age, districtID } = require("./config.json");
-console.log("Version 1.5", dosageProperty, vaccineName, fee, age, districtID);
+console.log("Version 2", dosageProperty, vaccineName, fee, age, districtID);
 
-async ionction playerFinal() {
-  player.play("./Audio.mp3", (err) => {
-    if (err) {
-      console.log(`Could not play sound: ${inspect(err)}`);
-    }
+async function playerFinal() {
+  return await new Promise((resolve, reject) => {
+    player.play("./Audio.mp3", (err) => {
+      resolve("");
+      /** 
+       * Callback function is always executed even if there is no error, fundamentals of node.js / callback hell.
+       * It is quite literally called a callback function for that reason.
+       * A function that executes after the eventual completion of the initial (child) function is called a callback (parent) function.
+       * For resolving something, Empty string is used in this case.
+       * ^^ Otherwise the entire script terminates prematurely, because of indefinite waiting to resolve something.
+       * Processes get terminated when there is nothing more to execute in node.js!
+       * typeof operator resolves even promises to check its type (not strict equality operator).
+       * Just a few observations.
+       */
+       if (err) {
+         reject(err);
+         console.log(`Could not play sound: ${inspect(err)}`);
+       }
+    });
   });
 }
 
 async function playAlert() {
+  /**
+   * Serializer Function, only works with asynchronous functions that return Promises.
+   * Does not work with synchronous functions.
+   */
   const queue = playerQueue.get("playerChain") || Promise.resolve();
   const playAudio = queue.then(() => playerFinal());
+  /**
+   * playAudio constant becomes the return value of playerFinal function.
+   * playAudio is wrapped (by then, queue being child & playAudio being parent) in a single layer of promise, which is awaitable.
+   * When a promise gets wrapped by another promise, it is not like there are two layers of promise,
+   * There is only a single layer of promise which is awaitable.
+   * Catch method has an empty function to make sure there is no unhandled exception error.
+   * Empty function propagates the error (if there is any) along the queue, so there is nothing to worry about.
+   */
   const tail = playAudio.catch(() => {});
   playerQueue.set("playerChain", tail);
   
   try {
-    return await playAudio;
+    return await playAudio; // awaited to make sure errors are "thrown".
   }
   finally {
-    if (playerQueue.get("playerChain") === tail) {
+    if (playerQueue.get("playerChain") === tail) { // I guess equality operator converts promises to verify when one is a promise and one is not a promise.
       playerQueue.delete("playerChain");
     }
   }
@@ -77,7 +102,7 @@ async function getAppointmentDetails(date) {
           getAppointmentDetails(date).then(res => resolve(res)).catch(err => reject(err));
         }, 4000); // https://stackoverflow.com/a/20999077/10901309
       });
-      return await finalRes;
+      return finalRes;
     }
   }
 }
