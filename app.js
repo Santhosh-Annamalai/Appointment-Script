@@ -11,7 +11,7 @@ const { dosageProperty, vaccineName, fee, age, districtID } = require("./config.
 console.log("Version 2.0", dosageProperty, vaccineName, fee, age, districtID);
 
 async function playerFinal() {
-  return await new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     player.play("./Audio.mp3", (err) => {
       resolve("");
       /** 
@@ -53,7 +53,7 @@ async function playAlert() {
   playerQueue.set("playerChain", tail);
   
   try {
-    return await playAudio; // awaited to make sure errors are "thrown".
+    return await playAudio; // awaited to make sure errors are "thrown", also used for waiting purposes.
   }
   finally {
     if (playerQueue.get("playerChain") === tail) {
