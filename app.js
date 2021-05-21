@@ -62,7 +62,6 @@ async function playAlert() {
        * Seems like promises are indeed resolved by strict equality operator for verification.
        * Both sides turn out to be the return value of playerFinal function, being an empty string.
       */
-      console.log(playerQueue.get("playerChain"), tail);
       playerQueue.delete("playerChain");
     }
   }
