@@ -2,18 +2,37 @@ const dateObject = new Date();
 const date = dateObject.toLocaleString("en-GB", { timeZone: "Asia/Kolkata" }).split(",")[0];
 console.log(date, dateObject.toLocaleString());
 let trialCounter = 0;
+let errorCounter = 0;
+let playerActive = false;
+const playerQueue = new Map();
 const superagent = require("superagent");
 const player = require("play-sound")();
 const { inspect } = require("util");
 const { dosageProperty, vaccineName, fee, age, districtID } = require("./config.json");
-console.log("Version 1.4", dosageProperty, vaccineName, fee, age, districtID);
+console.log("Version 1.5", dosageProperty, vaccineName, fee, age, districtID);
 
-function playAlert() {
+async ionction playerFinal() {
   player.play("./Audio.mp3", (err) => {
     if (err) {
       console.log(`Could not play sound: ${inspect(err)}`);
     }
   });
+}
+
+async function playAlert() {
+  const queue = playerQueue.get("playerChain") || Promise.resolve();
+  const playAudio = queue.then(() => playerFinal());
+  const tail = playAudio.catch(() => {});
+  playerQueue.set("playerChain", tail);
+  
+  try {
+    return await playAudio;
+  }
+  finally {
+    if (playerQueue.get("playerChain") === tail) {
+      playerQueue.delete("playerChain");
+    }
+  }
 }
 
 async function getAppointmentDetails(date) {
@@ -48,18 +67,18 @@ async function getAppointmentDetails(date) {
     }
   }
   catch (error) {
-    console.log(inspect(error));
+    errorCounter = errorCounter + 1;
+    console.log(`Error ${errorCounter}`, inspect(error));
     playAlert();
-    const finalRes = new Promise((resolve, reject) => {
-      setTimeout(() => {
-        getAppointmentDetails(date).then(res => resolve(res)).catch(err => {
-          console.log(inspect(err));
-          playAlert();
-          reject(err);
-        });
-      }, 4000); // https://stackoverflow.com/a/20999077/10901309
-    });
-    return finalRes;
+    
+    if (errorCounter <= 8) {
+      const finalRes = new Promise((resolve, reject) => {
+        setTimeout(() => {
+          getAppointmentDetails(date).then(res => resolve(res)).catch(err => reject(err));
+        }, 4000); // https://stackoverflow.com/a/20999077/10901309
+      });
+      return await finalRes;
+    }
   }
 }
 
@@ -68,24 +87,19 @@ async function loopQuery() {
     const response = await getAppointmentDetails(date);
     if (response.availability === true) {
       response.findingTime = new Date().toLocaleString("en-GB", { timeZone: "Asia/Kolkata" });
-      console.log("Slots are available. Kindly Proceed for Booking Appointment.\n\n", inspect(response.availableCenters, { depth: 4 }));
+      console.log(`Slots are available. Kindly Proceed for Booking Appointment.\nfindingTime: ${response.findingTime}\n\n`, inspect(response.availableCenters, { depth: 4 }));
       playAlert();
       return "";
     }
     else {
       trialCounter = trialCounter + 1;
-      // (trialCounter === 1) ? playAlert() : false;
-      console.log(trialCounter);
+      console.log(`Trial ${trialCounter}`);
       const finalResponse = new Promise((resolve, reject) => {
         setTimeout(() => {
-          loopQuery().then(res => resolve(res)).catch(err => {
-            console.log(inspect(err));
-            playAlert();
-            reject(err);
-          });
+          loopQuery().then(res => resolve(res)).catch(err => reject(err));
         }, 4000);
       });
-      return finalResponse;
+      return await finalResponse;
     }
   }
   catch (error) {
