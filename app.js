@@ -8,7 +8,7 @@ const superagent = require("superagent");
 const player = require("play-sound")();
 const { inspect } = require("util");
 const { dosageProperty, vaccineName, fee, age, districtID } = require("./config.json");
-console.log("Version 2", dosageProperty, vaccineName, fee, age, districtID);
+console.log("Version 2.0", dosageProperty, vaccineName, fee, age, districtID);
 
 async function playerFinal() {
   return await new Promise((resolve, reject) => {
@@ -36,6 +36,8 @@ async function playAlert() {
   /**
    * Serializer Function, only works with asynchronous functions that return Promises.
    * Does not work with synchronous functions.
+   * Player requests are serialized otherwise the same audio starts playing before one request could finish playing,
+   * Thereby creating high levels of noise as the same file gets played simultaneously by two different requests at different intervals.
    */
   const queue = playerQueue.get("playerChain") || Promise.resolve();
   const playAudio = queue.then(() => playerFinal());
@@ -54,7 +56,13 @@ async function playAlert() {
     return await playAudio; // awaited to make sure errors are "thrown".
   }
   finally {
-    if (playerQueue.get("playerChain") === tail) { // I guess equality operator converts promises to verify when one is a promise and one is not a promise.
+    if (playerQueue.get("playerChain") === tail) {
+      /**
+       * I guess equality operator converts promises to verify when one is a promise and one is not a promise.
+       * Seems like promises are indeed resolved by strict equality operator for verification.
+       * Both sides turn out to be the return value of playerFinal function, being an empty string.
+      */
+      console.log(playerQueue.get("playerChain"), tail);
       playerQueue.delete("playerChain");
     }
   }
@@ -103,6 +111,9 @@ async function getAppointmentDetails(date) {
         }, 4000); // https://stackoverflow.com/a/20999077/10901309
       });
       return finalRes;
+      /**
+       * Removed await because errors are gonna get caught in the next function anyway, when finalRes is resolved.
+       */
     }
   }
 }
