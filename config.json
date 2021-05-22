@@ -4,6 +4,8 @@
   "fee": "Paid or Free or Both",
   "age": "Number - 18 or 45 lower age limit",
   "districtID": "Number - Chennai ID is 571",
-  "cooldownTime": "Number - in milliseconds - 4000 being ideal",
-  "apolloGreamsID": 695918
+  "cooldownTime": "Number - in milliseconds - 4000 being ideal / default",
+  "apolloGreamsID": 695918,
+  "apolloGreamsRoadID": 603553,
+  "centerIDOnly": "Number - '0' for filter not required or '6 digit ID'"
 }

@@ -9,8 +9,8 @@ const generalQueue = new Map();
 const superagent = require("superagent");
 const player = require("play-sound")();
 const { inspect } = require("util");
-const { dosageProperty, vaccineName, fee, age, districtID, cooldownTime, apolloGreamsID } = require("./config.json");
-console.log("Version 2.1.2", dosageProperty, vaccineName, fee, age, districtID, cooldownTime, apolloGreamsID);
+const { dosageProperty, vaccineName, fee, age, districtID, cooldownTime, apolloGreamsID, apolloGreamsRoadID, centerIDOnly } = require("./config.json");
+console.log("Version 2.1.3", dosageProperty, vaccineName, fee, age, districtID, cooldownTime, apolloGreamsID, apolloGreamsRoadID, centerIDOnly);
 
 async function cooldown() {
   return new Promise((resolve, reject) => {
@@ -102,8 +102,11 @@ async function getAppointmentDetails(date) {
     const availableCenters = [];
     const response = await serializer("endpoint");
     
-    response.body.centers.forEach((arrayElement) => {
-      if ((fee === "Both") || (arrayElement.fee_type === fee)) {
+    for (arrayElement of response.body.centers) {
+      if ((arrayElement["center_id"] !== centerIDOnly) && (centerIDOnly !== 0)) {
+        // continue;
+      }
+      else if ((fee === "Both") || (arrayElement.fee_type === fee)) {
         let totalSessions = 0;
         let totalDoseOneSessions = 0;
         let totalDoseTwoSessions = 0;
@@ -133,7 +136,7 @@ async function getAppointmentDetails(date) {
           availableCenters.push(availableCenter);
         }
       }
-    });
+    }
       
     if (availableCenters.length > 0) {
       const responseObject = {
@@ -176,7 +179,7 @@ async function loopQuery() {
       let playAlternateMusic = false;
       response.findingTime = new Date().toLocaleString("en-GB", { timeZone: "Asia/Kolkata" });
       for (const availableCenter of response.availableCenters) {
-        if (availableCenter["center_id"] === apolloGreamsID) {
+        if ((availableCenter["center_id"] === apolloGreamsID) || (availableCenter["center_id"] === apolloGreamsRoadID) || (availableCentre["center_id"] === centerIDOnly)) {
           playAlternateMusic = true;
         }
         console.log(`=======================================================\n\n${availableCenter[(dosageProperty === "dose2") ? "totalDoseTwoSessions" : ((dosageProperty === "dose1") ? ("totalDoseOneSessions") : "totalSessions")]} ${dosageProperty} type Slots are available in ${availableCenter.name}. Kindly Proceed for Booking Appointment.\nfindingTime: ${response.findingTime}\n\n====================================================\n\nSession Availability Details:\n\n${inspect(availableCenter.availableSessions)}\n\n---------------------------------------------------------\n\ntotalSessions: ${availableCenter.totalSessions}\ntotalDose1Sessions: ${availableCenter.totalDoseOneSessions}\ntotalDose2Sessions: ${availableCenter.totalDoseTwoSessions}\n\n=================================================\n\n`);
