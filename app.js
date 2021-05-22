@@ -9,8 +9,8 @@ const generalQueue = new Map();
 const superagent = require("superagent");
 const player = require("play-sound")();
 const { inspect } = require("util");
-const { dosageProperty, vaccineName, fee, age, districtID, cooldownTime } = require("./config.json");
-console.log("Version 2.1.1", dosageProperty, vaccineName, fee, age, districtID, cooldownTime);
+const { dosageProperty, vaccineName, fee, age, districtID, cooldownTime, apolloGreamsID } = require("./config.json");
+console.log("Version 2.1.2", dosageProperty, vaccineName, fee, age, districtID, cooldownTime, apolloGreamsID);
 
 async function cooldown() {
   return new Promise((resolve, reject) => {
@@ -20,8 +20,9 @@ async function cooldown() {
   });
 }
 
-async function playerFinal() {
+async function playerFinal(playerName) {
   return new Promise((resolve, reject) => {
+    const finalMusic = ((playerName === true) ? "./Audio2.mp3" : "./Audio.mp3");
     player.play("./Audio.mp3", (err) => {
       resolve("");
       /** 
@@ -50,7 +51,7 @@ async function request() {
   return response;
 }
 
-async function serializer(nameOfProperty) {
+async function serializer(nameOfProperty, greamsBoolean) {
   /**
    * Serializer Function, only works with asynchronous functions that return Promises.
    * Does not work with synchronous functions.
@@ -61,7 +62,7 @@ async function serializer(nameOfProperty) {
   const chain = queue.then(() => {
     switch (nameOfProperty) {
       case "playerChain": {
-        return playerFinal();
+        return playerFinal(greamsBoolean);
       }
       case "endpoint": {
         return request();
@@ -103,11 +104,32 @@ async function getAppointmentDetails(date) {
     
     response.body.centers.forEach((arrayElement) => {
       if ((fee === "Both") || (arrayElement.fee_type === fee)) {
-        const possibleSessions = arrayElement.sessions.filter(({ min_age_limit, vaccine, available_capacity_dose1, available_capacity_dose2 }) => ((min_age_limit === age) && (vaccine === vaccineName) && ((dosageProperty === "dose2") ? (available_capacity_dose2 > 0) : (available_capacity_dose1 > 0))));
+        let totalSessions = 0;
+        let totalDoseOneSessions = 0;
+        let totalDoseTwoSessions = 0;
+        const possibleSessions = arrayElement.sessions.filter(({ min_age_limit, vaccine, available_capacity_dose1, available_capacity_dose2 }) => {
+          const ageVerify = (min_age_limit === age);
+          const vaccineVerify = (vaccine === vaccineName);
+          if (ageVerify && vaccineVerify) {
+            totalSessions = totalSessions + (available_capacity_dose1 + available_capacity_dose2);
+            totalDoseOneSessions = totalDoseOneSessions + available_capacity_dose1;
+            totalDoseTwoSessions = totalDoseTwoSessions + available_capacity_dose2;
+          }
+          const dosageOne = (available_capacity_dose1 > 0);
+          const dosageTwo = (available_capacity_dose2 > 0);
+          const dosageVerify = ((dosageProperty === "Either") ? (dosageOne || dosageTwo) :
+            ((dosageProperty === "Both") ? (dosageOne && dosageTwo) :
+            ((dosageProperty === "dose1") ? dosageOne : dosageTwo)));
           
+          const arrowRes = (vaccineVerify && ageVerify && dosageVerify);
+          return arrowRes;
+        });
         if (possibleSessions.length > 0) {
           const availableCenter = arrayElement;
           availableCenter.availableSessions = possibleSessions;
+          availableCenter.totalSessions = totalSessions;
+          availableCenter.totalDoseOneSessions = totalDoseOneSessions;
+          availableCenter.totalDoseTwoSessions = totalDoseTwoSessions;
           availableCenters.push(availableCenter);
         }
       }
@@ -129,7 +151,7 @@ async function getAppointmentDetails(date) {
   }
   catch (error) {
     errorCounter = errorCounter + 1;
-    console.log(`Error ${errorCounter}`, inspect(error));
+    console.log(`------------------------------------------------\n\nError ${errorCounter}`, inspect(error));
     serializer("playerChain");
     
     if (errorCounter <= 8) {
@@ -151,9 +173,16 @@ async function loopQuery() {
   try {
     const response = await getAppointmentDetails(date);
     if (response.availability === true) {
+      let playAlternateMusic = false;
       response.findingTime = new Date().toLocaleString("en-GB", { timeZone: "Asia/Kolkata" });
-      console.log(`Slots are available. Kindly Proceed for Booking Appointment.\nfindingTime: ${response.findingTime}\n\n`, inspect(response.availableCenters, { depth: 4 }));
-      serializer("playerChain");
+      for (const availableCenter of response.availableCenters) {
+        if (availableCenter["center_id"] === apolloGreamsID) {
+          playAlternateMusic = true;
+        }
+        console.log(`=======================================================\n\n${availableCenter[(dosageProperty === "dose2") ? "totalDoseTwoSessions" : ((dosageProperty === "dose1") ? ("totalDoseOneSessions") : "totalSessions")]} ${dosageProperty} type Slots are available in ${availableCenter.name}. Kindly Proceed for Booking Appointment.\nfindingTime: ${response.findingTime}\n\n====================================================\n\nSession Availability Details:\n\n${inspect(availableCenter.availableSessions)}\n\n---------------------------------------------------------\n\ntotalSessions: ${availableCenter.totalSessions}\ntotalDose1Sessions: ${availableCenter.totalDoseOneSessions}\ntotalDose2Sessions: ${availableCenter.totalDoseTwoSessions}\n\n=================================================\n\n`);
+      }
+      console.log(inspect(response.availableCenters, { depth: 4 }))
+      serializer("playerChain", playAlternateMusic);
       return "";
     }
     else {
@@ -164,7 +193,7 @@ async function loopQuery() {
     }
   }
   catch (error) {
-    console.log(inspect(error));
+    console.log("---------------------------------------------------\n\n" + inspect(error));
     serializer("playerChain");
   }
 }
