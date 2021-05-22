@@ -22,7 +22,7 @@ async function playerFinal() {
        * ^^ Otherwise the entire script terminates prematurely, because of indefinite waiting to resolve something.
        * Processes get terminated when there is nothing more to execute in node.js!
        * typeof operator resolves even promises to check its type (not strict equality operator).
-       * Just a few observations.
+       * Just a few observations and verbose comments.
        */
        if (err) {
          reject(err);
@@ -47,7 +47,9 @@ async function playAlert() {
    * When a promise gets wrapped by another promise, it is not like there are two layers of promise,
    * There is only a single layer of promise which is awaitable.
    * Catch method has an empty function to make sure there is no unhandled exception error.
-   * Empty function propagates the error (if there is any) along the queue, so there is nothing to worry about.
+   * Empty function propagates the error (if there is any) along the queue / chain, so there is nothing to worry about.
+   * I believe catch method returns an empty object literal instead of it being an empty function.
+   * Errors / Exceptions are propagated anyway regardless of whether it is an empty object literal or a function.
    */
   const tail = playAudio.catch(() => {});
   playerQueue.set("playerChain", tail);
@@ -60,7 +62,7 @@ async function playAlert() {
       /**
        * I guess equality operator converts promises to verify when one is a promise and one is not a promise.
        * Seems like promises are indeed resolved by strict equality operator for verification.
-       * Both sides turn out to be the return value of playerFinal function, being an empty string.
+       * Both sides turn out to be the return value of playerFinal function, being an empty string (When "finally" gets executed).
       */
       playerQueue.delete("playerChain");
     }
