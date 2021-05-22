@@ -64,12 +64,10 @@ async function serializer(nameOfProperty) {
   const chain = queue.then(() => {
     switch (nameOfProperty) {
       case "playerChain": {
-        playerFinal();
-        break;
+        return playerFinal();
       }
       case "endpoint": {
-        request();
-        break;
+        return request();
       }
     }
   });
