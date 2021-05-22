@@ -179,7 +179,7 @@ async function loopQuery() {
       let playAlternateMusic = false;
       response.findingTime = new Date().toLocaleString("en-GB", { timeZone: "Asia/Kolkata" });
       for (const availableCenter of response.availableCenters) {
-        if ((availableCenter["center_id"] === apolloGreamsID) || (availableCenter["center_id"] === apolloGreamsRoadID) || (availableCentre["center_id"] === centerIDOnly)) {
+        if ((availableCenter["center_id"] === apolloGreamsID) || (availableCenter["center_id"] === apolloGreamsRoadID) || (availableCenter["center_id"] === centerIDOnly)) {
           playAlternateMusic = true;
         }
         console.log(`=======================================================\n\n${availableCenter[(dosageProperty === "dose2") ? "totalDoseTwoSessions" : ((dosageProperty === "dose1") ? ("totalDoseOneSessions") : "totalSessions")]} ${dosageProperty} type Slots are available in ${availableCenter.name}. Kindly Proceed for Booking Appointment.\nfindingTime: ${response.findingTime}\n\n====================================================\n\nSession Availability Details:\n\n${inspect(availableCenter.availableSessions)}\n\n---------------------------------------------------------\n\ntotalSessions: ${availableCenter.totalSessions}\ntotalDose1Sessions: ${availableCenter.totalDoseOneSessions}\ntotalDose2Sessions: ${availableCenter.totalDoseTwoSessions}\n\n=================================================\n\n`);
