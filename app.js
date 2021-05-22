@@ -45,7 +45,7 @@ async function playerFinal() {
   });
 }
 
-async request() {
+async function request() {
   endpointCooldown = true;
   const response = superagent.get(`https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id=${districtID}&date=${date}`);
   await cooldown();
