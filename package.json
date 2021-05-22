@@ -1,6 +1,6 @@
 {
-  "name": "vaccination-slot-checking-script",
-  "version": "1.0.0",
+  "name": "Appointment-Script",
+  "version": "2.1.1",
   "description": "A script to automate appointment checking",
   "main": "app.js",
   "scripts": {

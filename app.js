@@ -10,8 +10,7 @@ const superagent = require("superagent");
 const player = require("play-sound")();
 const { inspect } = require("util");
 const { dosageProperty, vaccineName, fee, age, districtID, cooldownTime } = require("./config.json");
-let endpointCooldown = true;
-console.log("Version 2.1", dosageProperty, vaccineName, fee, age, districtID, cooldownTime);
+console.log("Version 2.1.1", dosageProperty, vaccineName, fee, age, districtID, cooldownTime);
 
 async function cooldown() {
   return new Promise((resolve, reject) => {
@@ -46,10 +45,8 @@ async function playerFinal() {
 }
 
 async function request() {
-  endpointCooldown = true;
   const response = superagent.get(`https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id=${districtID}&date=${date}`);
   await cooldown();
-  endpointCooldown = false;
   return response;
 }
 
@@ -141,8 +138,11 @@ async function getAppointmentDetails(date) {
       });
       return finalRes;
       /**
-       * Removed await because errors are gonna get caught in the next function anyway, when finalRes is resolved.
+       * Removed await because errors are gonna get caught in the next function anyway, when finalRes is resolved (redundant).
        */
+    }
+    else {
+      throw error;
     }
   }
 }
@@ -166,7 +166,6 @@ async function loopQuery() {
   catch (error) {
     console.log(inspect(error));
     serializer("playerChain");
-    return error;
   }
 }
 
