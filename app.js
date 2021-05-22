@@ -102,7 +102,7 @@ async function getAppointmentDetails(date) {
     const availableCenters = [];
     const response = await serializer("endpoint");
     
-    for (arrayElement of response.body.centers) {
+    for (const arrayElement of response.body.centers) {
       if ((arrayElement["center_id"] !== centerIDOnly) && (centerIDOnly !== 0)) {
         // continue;
       }
