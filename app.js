@@ -9,8 +9,8 @@ const generalQueue = new Map();
 const superagent = require("superagent");
 const player = require("play-sound")();
 const { inspect } = require("util");
-const { dosageProperty, vaccineName, fee, age, districtID, cooldownTime, apolloGreamsID, apolloGreamsRoadID, centerIDOnly } = require("./config.json");
-console.log("Version 2.1.3", dosageProperty, vaccineName, fee, age, districtID, cooldownTime, apolloGreamsID, apolloGreamsRoadID, centerIDOnly);
+const { dosageProperty, vaccineName, fee, age, districtID, cooldownTime, apolloGreamsID, apolloGreamsRoadID, centerIDOnly, appointmentDate } = require("./config.json");
+console.log("Version 2.1.4", dosageProperty, vaccineName, fee, age, districtID, cooldownTime, apolloGreamsID, apolloGreamsRoadID, centerIDOnly, appointmentDate);
 
 async function cooldown() {
   return new Promise((resolve, reject) => {
@@ -23,7 +23,7 @@ async function cooldown() {
 async function playerFinal(playerName) {
   return new Promise((resolve, reject) => {
     const finalMusic = ((playerName === true) ? "./Audio2.mp3" : "./Audio.mp3");
-    player.play("./Audio.mp3", (err) => {
+    player.play(finalMusic, (err) => {
       resolve("");
       /** 
        * Callback function is always executed even if there is no error, fundamentals of node.js / callback hell.
@@ -46,7 +46,7 @@ async function playerFinal(playerName) {
 }
 
 async function request() {
-  const response = superagent.get(`https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id=${districtID}&date=${date}`);
+  const response = superagent.get(`https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id=${districtID}&date=${appointmentDate}`);
   await cooldown();
   return response;
 }
