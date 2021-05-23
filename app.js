@@ -62,7 +62,8 @@ async function serializer(nameOfProperty, greamsBoolean) {
   const chain = queue.then(() => {
     switch (nameOfProperty) {
       case "playerChain": {
-        return playerFinal(greamsBoolean);
+        const specialMusic = ((greamsBoolean !== undefined) ? greamsBoolean : false);
+        return playerFinal(specialMusic);
       }
       case "endpoint": {
         return request();
@@ -182,7 +183,7 @@ async function loopQuery() {
         if ((availableCenter["center_id"] === apolloGreamsID) || (availableCenter["center_id"] === apolloGreamsRoadID) || (availableCenter["center_id"] === centerIDOnly)) {
           playAlternateMusic = true;
         }
-        console.log(`=======================================================\n\n${availableCenter[(dosageProperty === "dose2") ? "totalDoseTwoSessions" : ((dosageProperty === "dose1") ? ("totalDoseOneSessions") : "totalSessions")]} ${dosageProperty} type Slots are available in ${availableCenter.name}. Kindly Proceed for Booking Appointment.\nfindingTime: ${response.findingTime}\n\n====================================================\n\nSession Availability Details:\n\n${inspect(availableCenter.availableSessions)}\n\n---------------------------------------------------------\n\ntotalSessions: ${availableCenter.totalSessions}\ntotalDose1Sessions: ${availableCenter.totalDoseOneSessions}\ntotalDose2Sessions: ${availableCenter.totalDoseTwoSessions}\n\n=================================================\n\n`);
+        console.log(`=======================================================\n\n${availableCenter[(dosageProperty === "dose2") ? "totalDoseTwoSessions" : ((dosageProperty === "dose1") ? ("totalDoseOneSessions") : "totalSessions")]} ${dosageProperty} type Slots for ${vaccineName} are available in ${availableCenter.name}. Kindly Proceed for Booking Appointment.\nfindingTime: ${response.findingTime}\n\n====================================================\n\nSession Availability Details:\n\n${inspect(availableCenter.availableSessions)}\n\n---------------------------------------------------------\n\ntotalSessions: ${availableCenter.totalSessions}\ntotalDose1Sessions: ${availableCenter.totalDoseOneSessions}\ntotalDose2Sessions: ${availableCenter.totalDoseTwoSessions}\n\n=================================================\n\n`);
       }
       console.log(inspect(response.availableCenters, { depth: 4 }))
       serializer("playerChain", playAlternateMusic);
