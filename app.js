@@ -10,7 +10,7 @@ const superagent = require("superagent");
 const player = require("play-sound")();
 const { inspect } = require("util");
 const { dosageProperty, vaccineName, fee, age, districtID, cooldownTime, apolloGreamsID, apolloGreamsRoadID, centerIDOnly, appointmentDate } = require("./config.json");
-console.log("Version 2.1.4", dosageProperty, vaccineName, fee, age, districtID, cooldownTime, apolloGreamsID, apolloGreamsRoadID, centerIDOnly, appointmentDate);
+console.log("Version 2.1.5", dosageProperty, vaccineName, fee, age, districtID, cooldownTime, apolloGreamsID, apolloGreamsRoadID, centerIDOnly, appointmentDate);
 
 async function cooldown() {
   return new Promise((resolve, reject) => {
@@ -22,7 +22,7 @@ async function cooldown() {
 
 async function playerFinal(playerName) {
   return new Promise((resolve, reject) => {
-    const finalMusic = ((playerName === true) ? "./Audio2.mp3" : "./Audio.mp3");
+    const finalMusic = ((playerName === true) ? "./Audio2.mp3" : ((playerName === "error") ? "./errorAudio.mp3" : "./Audio.mp3"));
     player.play(finalMusic, (err) => {
       resolve("");
       /** 
@@ -156,7 +156,7 @@ async function getAppointmentDetails(date) {
   catch (error) {
     errorCounter = errorCounter + 1;
     console.log(`------------------------------------------------\n\nError ${errorCounter}`, inspect(error));
-    serializer("playerChain");
+    serializer("playerChain", "error");
     
     if (errorCounter <= 8) {
       const finalRes = new Promise((resolve, reject) => {
@@ -198,7 +198,7 @@ async function loopQuery() {
   }
   catch (error) {
     console.log("---------------------------------------------------\n\n" + inspect(error));
-    serializer("playerChain");
+    serializer("playerChain", "error");
   }
 }
 
