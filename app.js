@@ -188,6 +188,7 @@ async function getAppointmentDetails() {
       return finalRes;
       /**
        * Removed await because errors are gonna get caught in the next function anyway, when finalRes is resolved (redundant).
+       * Returning instead of Throwing as finalRes could contain "a resolved promise" or a rejected error. It is uncertain until the promise gets awaited.
        */
     }
     else {
