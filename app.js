@@ -12,7 +12,7 @@ const { inspect } = require("util");
 const { createWriteStream } = require("fs");
 const { dosageProperty, vaccineName, fee, age, districtID, cooldownTime, apolloGreamsID, apolloGreamsRoadID, centerIDOnly, appointmentDate, errorClearance, autoResetErrors, logFileLocation } = require("./config.json");
 const logStream = createWriteStream(logFileLocation, { flags: "a" });
-console.log("Version 2.1.6", dosageProperty, vaccineName, fee, age, districtID, cooldownTime, apolloGreamsID, apolloGreamsRoadID, centerIDOnly, appointmentDate, errorClearance, autoResetErrors, logFileLocation);
+console.log("Version 2.1.7", dosageProperty, vaccineName, fee, age, districtID, cooldownTime, apolloGreamsID, apolloGreamsRoadID, centerIDOnly, appointmentDate, errorClearance, autoResetErrors, logFileLocation);
 
 async function cooldown() {
   return new Promise((resolve, reject) => {
@@ -39,8 +39,8 @@ async function playerFinal(playerName) {
        * Just a few observations and verbose comments.
        */
       if (err) {
-        reject(err);
         console.log(`Could not play sound: ${inspect(err)}`);
+        reject(err);
       }
       else {
         resolve("");
@@ -109,6 +109,14 @@ async function resetErrorCounter() {
   return "";
 }
 
+async function errorLogger(error) {
+  const errorDate = new Date().toLocaleString("en-GB", { timeZone: "Asia/Kolkata" });
+  const representation = `------------------------------------------------\n\nError ${errorCounter}, Date: ${errorDate}\n\n${inspect(error)}`;
+  console.log(representation + "\n");
+  logStream.write(`${representation}\n`);
+  return "";
+}
+
 async function getAppointmentDetails(date) {
   try {
     const availableCenters = [];
@@ -170,11 +178,8 @@ async function getAppointmentDetails(date) {
   }
   catch (error) {
     errorCounter = errorCounter + 1;
-    const errorDate = new Date().toLocaleString();
-    const representation = `------------------------------------------------\n\nError ${errorCounter}, Date: ${errorDate}\n\n${inspect(error)}`;
-    logStream.write(`${representation}\n`);
-    console.log(representation);
-    serializer("playerChain", "error");
+    errorLogger(error);
+    serializer("playerChain", "error").catch(errMusic => errorLogger(errMusic));
     
     if (errorCounter <= errorClearance) {
       const finalRes = new Promise((resolve, reject) => {
@@ -204,7 +209,7 @@ async function loopQuery() {
         console.log(`=======================================================\n\n${availableCenter[(dosageProperty === "dose2") ? "totalDoseTwoSessions" : ((dosageProperty === "dose1") ? ("totalDoseOneSessions") : "totalSessions")]} ${dosageProperty} type Slots for ${vaccineName} are available in ${availableCenter.name}. Kindly Proceed for Booking Appointment.\nfindingTime: ${response.findingTime}\n\n====================================================\n\nSession Availability Details:\n\n${inspect(availableCenter.availableSessions)}\n\n---------------------------------------------------------\n\ntotalSessions: ${availableCenter.totalSessions}\ntotalDose1Sessions: ${availableCenter.totalDoseOneSessions}\ntotalDose2Sessions: ${availableCenter.totalDoseTwoSessions}\n\n=================================================\n\n`);
       }
       console.log(inspect(response.availableCenters, { depth: 4 }))
-      serializer("playerChain", playAlternateMusic);
+      serializer("playerChain", playAlternateMusic).catch(errMusic => errorLogger(errMusic));
       return "";
     }
     else {
@@ -215,12 +220,8 @@ async function loopQuery() {
     }
   }
   catch (error) {
-    const errorDate = new Date().toLocaleString();
-    const representation = "---------------------------------------------------\nDate:" + errorDate + "\n\n" + inspect(error);
-    logStream.write(`${representation}\n`);
-    console.log(representation);
-    logStream.end();
-    serializer("playerChain", "error");
+    errorLogger(error);
+    serializer("playerChain", "error").catch(error => errorLogger(error));
   }
 }
 
