@@ -215,7 +215,8 @@ async function loopQuery() {
     }
   }
   catch (error) {
-    const representation = "---------------------------------------------------\n\n" + inspect(error);
+    const errorDate = new Date().toLocaleString();
+    const representation = "---------------------------------------------------\nDate:" + errorDate + "\n\n" + inspect(error);
     logStream.write(`${representation}\n`);
     console.log(representation);
     logStream.end();
