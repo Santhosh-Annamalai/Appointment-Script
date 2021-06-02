@@ -9,8 +9,10 @@ const generalQueue = new Map();
 const superagent = require("superagent");
 const player = require("play-sound")();
 const { inspect } = require("util");
-const { dosageProperty, vaccineName, fee, age, districtID, cooldownTime, apolloGreamsID, apolloGreamsRoadID, centerIDOnly, appointmentDate } = require("./config.json");
-console.log("Version 2.1.5", dosageProperty, vaccineName, fee, age, districtID, cooldownTime, apolloGreamsID, apolloGreamsRoadID, centerIDOnly, appointmentDate);
+const { createWriteStream } = require("fs");
+const { dosageProperty, vaccineName, fee, age, districtID, cooldownTime, apolloGreamsID, apolloGreamsRoadID, centerIDOnly, appointmentDate, errorClearance, autoResetErrors, logFileLocation } = require("./config.json");
+const logStream = createWriteStream(logFileLocation, { flags: "a" });
+console.log("Version 2.1.6", dosageProperty, vaccineName, fee, age, districtID, cooldownTime, apolloGreamsID, apolloGreamsRoadID, centerIDOnly, appointmentDate, errorClearance, autoResetErrors, logFileLocation);
 
 async function cooldown() {
   return new Promise((resolve, reject) => {
@@ -24,7 +26,6 @@ async function playerFinal(playerName) {
   return new Promise((resolve, reject) => {
     const finalMusic = ((playerName === true) ? "./Audio2.mp3" : ((playerName === "error") ? "./errorAudio.mp3" : "./Audio.mp3"));
     player.play(finalMusic, (err) => {
-      resolve("");
       /** 
        * Callback function is always executed even if there is no error, fundamentals of node.js / callback hell.
        * Always, a function / method either has a callback to be executed after its eventual completion or returns a promise.
@@ -40,6 +41,9 @@ async function playerFinal(playerName) {
       if (err) {
         reject(err);
         console.log(`Could not play sound: ${inspect(err)}`);
+      }
+      else {
+        resolve("");
       }
     });
   });
@@ -98,6 +102,13 @@ async function serializer(nameOfProperty, greamsBoolean) {
   }
 }
 
+async function resetErrorCounter() {
+  if ((autoResetErrors === true) && (errorCounter > 0)) {
+    errorCounter = 0;
+  }
+  return "";
+}
+
 async function getAppointmentDetails(date) {
   try {
     const availableCenters = [];
@@ -138,27 +149,34 @@ async function getAppointmentDetails(date) {
         }
       }
     }
+    
+    // await resetErrorCounter(); can also be used here instead of usage inside conditionals.
       
     if (availableCenters.length > 0) {
       const responseObject = {
         availability: true,
         availableCenters
       };
+      await resetErrorCounter();
       return responseObject;
     }
     else {
       const responseObject = {
         availability: false
       };
+      await resetErrorCounter();
       return responseObject;
     }
   }
   catch (error) {
     errorCounter = errorCounter + 1;
-    console.log(`------------------------------------------------\n\nError ${errorCounter}`, inspect(error));
+    const errorDate = new Date().toLocaleString();
+    const representation = `------------------------------------------------\n\nError ${errorCounter}, Date: ${errorDate}\n\n${inspect(error)}`;
+    logStream.write(`${representation}\n`);
+    console.log(representation);
     serializer("playerChain", "error");
     
-    if (errorCounter <= 8) {
+    if (errorCounter <= errorClearance) {
       const finalRes = new Promise((resolve, reject) => {
         process.nextTick(() => getAppointmentDetails(date).then(res => resolve(res)).catch(err => reject(err))); // https://stackoverflow.com/a/20999077/10901309
       });
@@ -197,7 +215,10 @@ async function loopQuery() {
     }
   }
   catch (error) {
-    console.log("---------------------------------------------------\n\n" + inspect(error));
+    const representation = "---------------------------------------------------\n\n" + inspect(error);
+    logStream.write(`${representation}\n`);
+    console.log(representation);
+    logStream.end();
     serializer("playerChain", "error");
   }
 }
