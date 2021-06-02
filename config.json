@@ -11,5 +11,7 @@
   "appointmentDate": "Date in DD/MM/YYYY Format - 07/06/2021",
   "errorClearance": "Number - 8 is recommended",
   "autoResetErrors": "Boolean - If 8 continuous errors of a single iteration should terminate the program, write true. If 8 errors in total (of different iterations) should terminate the program, write false (recommended).",
-  "logFileLocation": "/storage/emulated/0/logFiles/Appointment-Script/logFile"
+  "logFileLocation": "/storage/emulated/0/logFiles/Appointment-Script/logFile",
+  "renderedResponseLocation": "/storage/emulated/0/logFiles/Appointment-Script/renderedResponse",
+  "rawResponseLocation": "/storage/emulated/0/logFiles/Appointment-Script/rawResponse"
 }

@@ -10,9 +10,11 @@ const superagent = require("superagent");
 const player = require("play-sound")();
 const { inspect } = require("util");
 const { createWriteStream } = require("fs");
-const { dosageProperty, vaccineName, fee, age, districtID, cooldownTime, apolloGreamsID, apolloGreamsRoadID, centerIDOnly, appointmentDate, errorClearance, autoResetErrors, logFileLocation } = require("./config.json");
+const { dosageProperty, vaccineName, fee, age, districtID, cooldownTime, apolloGreamsID, apolloGreamsRoadID, centerIDOnly, appointmentDate, errorClearance, autoResetErrors, logFileLocation, renderedResponseLocation, rawResponseLocation } = require("./config.json");
 const logStream = createWriteStream(logFileLocation, { flags: "a" });
-console.log("Version 2.1.8", dosageProperty, vaccineName, fee, age, districtID, cooldownTime, apolloGreamsID, apolloGreamsRoadID, centerIDOnly, appointmentDate, errorClearance, autoResetErrors, logFileLocation);
+const renderedResponseStream = createWriteStream(renderedResponseLocation, { flags: "a" });
+const rawResponseStream = createWriteStream(rawResponseLocation, { flags: "a" });
+console.log("Version 2.1.8", dosageProperty, vaccineName, fee, age, districtID, cooldownTime, apolloGreamsID, apolloGreamsRoadID, centerIDOnly, appointmentDate, errorClearance, autoResetErrors, logFileLocation, renderedResponseLocation, rawResponseLocation);
 
 async function cooldown() {
   return new Promise((resolve, reject) => {
@@ -202,14 +204,19 @@ async function loopQuery() {
     const response = await getAppointmentDetails();
     if (response.availability === true) {
       let playAlternateMusic = false;
+      let index = 0;
       response.findingTime = new Date().toLocaleString("en-GB", { timeZone: "Asia/Kolkata" });
+      console.log(`\n================================================================\n\nAppointment is available in ${response.availableCenters.length} centers\n`);
       for (const availableCenter of response.availableCenters) {
+        index = index + 1;
         if ((availableCenter["center_id"] === apolloGreamsID) || (availableCenter["center_id"] === apolloGreamsRoadID) || (availableCenter["center_id"] === centerIDOnly)) {
           playAlternateMusic = true;
         }
-        console.log(`=======================================================\n\n${availableCenter[(dosageProperty === "dose2") ? "totalDoseTwoSessions" : ((dosageProperty === "dose1") ? ("totalDoseOneSessions") : "totalSessions")]} ${dosageProperty} type Slots for ${vaccineName} are available in ${availableCenter.name}. Kindly Proceed for Booking Appointment.\nfindingTime: ${response.findingTime}\n\n====================================================\n\nSession Availability Details:\n\n${inspect(availableCenter.availableSessions)}\n\n---------------------------------------------------------\n\ntotalSessions: ${availableCenter.totalSessions}\ntotalDose1Sessions: ${availableCenter.totalDoseOneSessions}\ntotalDose2Sessions: ${availableCenter.totalDoseTwoSessions}\n\n=================================================\n\n`);
+        const resRepresentation = `========================    ${index}    ===============================\n\n${availableCenter[(dosageProperty === "dose2") ? "totalDoseTwoSessions" : ((dosageProperty === "dose1") ? ("totalDoseOneSessions") : "totalSessions")]} ${dosageProperty} type Slots for ${vaccineName} are available in ${availableCenter.name}. Kindly Proceed for Booking Appointment.\nfindingTime: ${response.findingTime}\n\n====================================================\n\nSession Availability Details:\n\n${inspect(availableCenter.availableSessions)}\n\n---------------------------------------------------------\n\ntotalSessions: ${availableCenter.totalSessions}\ntotalDose1Sessions: ${availableCenter.totalDoseOneSessions}\ntotalDose2Sessions: ${availableCenter.totalDoseTwoSessions}\n\n=================================================\n\n`;
+        renderedResponseStream.write(resRepresentation);
+        console.log(resRepresentation);
       }
-      console.log(inspect(response.availableCenters, { depth: 4 }))
+      rawResponseStream.write(inspect(response.availableCenters, { depth: 4 }));
       serializer("playerChain", playAlternateMusic).catch(errMusic => errorLogger(errMusic));
       return "";
     }
