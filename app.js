@@ -220,6 +220,7 @@ async function loopQuery() {
     }
   }
   catch (error) {
+    errorCounter = errorCounter + 1;
     errorLogger(error);
     serializer("playerChain", "error").catch(error => errorLogger(error));
   }
