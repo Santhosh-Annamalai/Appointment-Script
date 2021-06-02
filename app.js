@@ -12,7 +12,7 @@ const { inspect } = require("util");
 const { createWriteStream } = require("fs");
 const { dosageProperty, vaccineName, fee, age, districtID, cooldownTime, apolloGreamsID, apolloGreamsRoadID, centerIDOnly, appointmentDate, errorClearance, autoResetErrors, logFileLocation } = require("./config.json");
 const logStream = createWriteStream(logFileLocation, { flags: "a" });
-console.log("Version 2.1.7", dosageProperty, vaccineName, fee, age, districtID, cooldownTime, apolloGreamsID, apolloGreamsRoadID, centerIDOnly, appointmentDate, errorClearance, autoResetErrors, logFileLocation);
+console.log("Version 2.1.8", dosageProperty, vaccineName, fee, age, districtID, cooldownTime, apolloGreamsID, apolloGreamsRoadID, centerIDOnly, appointmentDate, errorClearance, autoResetErrors, logFileLocation);
 
 async function cooldown() {
   return new Promise((resolve, reject) => {
@@ -117,7 +117,7 @@ async function errorLogger(error) {
   return "";
 }
 
-async function getAppointmentDetails(date) {
+async function getAppointmentDetails() {
   try {
     const availableCenters = [];
     const response = await serializer("endpoint");
@@ -183,7 +183,7 @@ async function getAppointmentDetails(date) {
     
     if (errorCounter <= errorClearance) {
       const finalRes = new Promise((resolve, reject) => {
-        process.nextTick(() => getAppointmentDetails(date).then(res => resolve(res)).catch(err => reject(err))); // https://stackoverflow.com/a/20999077/10901309
+        process.nextTick(() => getAppointmentDetails().then(res => resolve(res)).catch(err => reject(err))); // https://stackoverflow.com/a/20999077/10901309
       });
       return finalRes;
       /**
@@ -198,7 +198,7 @@ async function getAppointmentDetails(date) {
 
 async function loopQuery() {
   try {
-    const response = await getAppointmentDetails(date);
+    const response = await getAppointmentDetails();
     if (response.availability === true) {
       let playAlternateMusic = false;
       response.findingTime = new Date().toLocaleString("en-GB", { timeZone: "Asia/Kolkata" });
