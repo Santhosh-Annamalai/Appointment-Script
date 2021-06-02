@@ -206,7 +206,9 @@ async function loopQuery() {
       let playAlternateMusic = false;
       let index = 0;
       response.findingTime = new Date().toLocaleString("en-GB", { timeZone: "Asia/Kolkata" });
-      console.log(`\n================================================================\n\nAppointment is available in ${response.availableCenters.length} centers\n`);
+      const headline = `\n================================================================\n\nAppointment is available in ${response.availableCenters.length} centers\n\n`;
+      renderedResponseStream.write(headline);
+      console.log(headline);
       for (const availableCenter of response.availableCenters) {
         index = index + 1;
         if ((availableCenter["center_id"] === apolloGreamsID) || (availableCenter["center_id"] === apolloGreamsRoadID) || (availableCenter["center_id"] === centerIDOnly)) {
@@ -216,7 +218,7 @@ async function loopQuery() {
         renderedResponseStream.write(resRepresentation);
         console.log(resRepresentation);
       }
-      rawResponseStream.write(inspect(response.availableCenters, { depth: 4 }));
+      rawResponseStream.write("\n\n===================================================================\n\n" + inspect(response, { depth: 6 }));
       serializer("playerChain", playAlternateMusic).catch(errMusic => errorLogger(errMusic));
       return "";
     }
