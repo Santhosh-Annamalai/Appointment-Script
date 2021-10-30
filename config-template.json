@@ -1,0 +1,17 @@
+{
+  "dosageProperty": "Either or Both or dose2 or dose1",
+  "vaccineName": "COVAXIN or COVISHIELD",
+  "fee": "Paid or Free or Both",
+  "age": "Number - 18 or 45 lower age limit",
+  "districtID": "Number - Chennai ID is 571",
+  "cooldownTime": "Number - in milliseconds - 4000 being ideal / default",
+  "apolloGreamsID": 695918,
+  "apolloGreamsRoadID": 603553,
+  "centerIDOnly": "Number - '0' for filter not required or '6 digit ID'",
+  "appointmentDate": "Date in DD/MM/YYYY Format - 07/06/2021",
+  "errorClearance": "Number - 8 is recommended",
+  "autoResetErrors": "Boolean - If 8 continuous errors of a single iteration should terminate the program, write true. If 8 errors in total (of different iterations) should terminate the program, write false (recommended).",
+  "logFileLocation": "/storage/emulated/0/logFiles/Appointment-Script/logFile",
+  "renderedResponseLocation": "/storage/emulated/0/logFiles/Appointment-Script/renderedResponse",
+  "rawResponseLocation": "/storage/emulated/0/logFiles/Appointment-Script/rawResponse"
+}
